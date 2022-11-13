@@ -140,6 +140,7 @@ size_t _puts3(char *str)
 void print_message(char *str)
 {
 	long num, len;
+	
 	num = _strlen(str);
 	len = write(STDOUT_FILENO, str, num);
 	if (len != num)
