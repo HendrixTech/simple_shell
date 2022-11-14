@@ -1,4 +1,4 @@
-#include "holberton.h"
+#include "main.h"
 /**
  * check_if_match - checks if a character matches any in a string
  * @c: character to check
