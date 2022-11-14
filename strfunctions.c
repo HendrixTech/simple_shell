@@ -1,4 +1,4 @@
-#include "holberton.h"
+#include "main.h"
 
 
 /***** RETURNS A POINTER TO A NEW STRING ******/
