@@ -24,7 +24,7 @@ Shells read configuration files in various circumstances. These files usually co
 
 ## File Structure
 
-* [holberton.h](holberton.h) - program header file
+* [main.h](main.h) - program header file
 
 * [.simple_shell_history](.simple_shell_history) - File where history's historial must be saved
 
@@ -181,7 +181,7 @@ The simple_shell is designed to execute commands in a similar manner to sh, howe
 
 $ ls
 add_functions.c           helpfiles            more_help_functions2.c  shell2
-builtings.c               holberton.h          more_help_functions.c   strfunctions.c
+builtings.c               main.h          more_help_functions.c   strfunctions.c
 enviroment.c              hsh                  new_help.c              tokenizer.c
 env_unsetenv_functions.c  main.c               new_strtok.c
 fork_child.c              memory_allocation.c  print_functions.c
