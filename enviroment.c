@@ -1,58 +1,136 @@
-#include "main.h"
+#include "commands.h"
+#include "general.h"
+#include "text.h"
+#include <string.h>
+#include <sys/cdefs.h>
+#include <unistd.h>
 
 /**
- * make_enviroment - make the shell environment from the environment.
- * @env: environment passed to main
+ * _getenv - Get a environment variable
  *
- * Return: pointer to the new environment
- */
-char **make_enviroment(char **env)
+ * @name: Environment variable to get
+ *
+ * Return: On success value of @name
+ * On error, NULL
+ **/
+char *_getenv(const char *name)
 {
-char **newenviroment = NULL;
+	char **env;
+	char *aux, *token, *value;
+	int size;
 
-size_t i;
+	size = _strlen((char *) name);
 
-	for (i = 0; env[i] != NULL; i++)
-		;
-	newenviroment = malloc(sizeof(char *) * (i + 1));
-	if (newenviroment == NULL)
+	for (env = environ; *env; ++env)
 	{
-		perror("Fatal Error");
-		exit(1);
+		aux = _strdup(*env);
+
+		token = strtok(aux, "=");
+		if (token == NULL)
+		{
+			free(aux);
+			return (NULL);
+		}
+
+		if (_strlen(token) != size)
+		{
+			free(aux);
+			continue;
+		}
+
+		if (_strcmp((char *) name, aux) == 0)
+		{
+			token = strtok(NULL, "=");
+			value = _strdup(token);
+
+			free(aux);
+			return (value);
+		}
+
+		free(aux);
 	}
-	for (i = 0; env[i] != NULL; i++)
-		newenviroment[i] = _strdup(env[i]);
-	newenviroment[i] = NULL;
-	return (newenviroment);
+
+	return (NULL);
 }
 
 /**
- * free_env - free the shell's environment
- * @env: shell's environment
+ * which - Find the directory needed
  *
- * Return: void
+ * @filename: Command received
+ * @info: General info about the shell
+ *
+ * Return: pointer string with found path or NULL in failure.
  */
-void free_env(char **env)
+char *which(char *filename, general_t *info)
 {
-	unsigned int i;
+	char *path, *tmp_path, *token;
+	char *slash;
+	int size;
 
-	for (i = 0; env[i] != NULL; i++)
-		free(env[i]);
-	free(env);
+	(void) info;
+
+	path = _getenv("PATH");
+	if (path == NULL)
+		return (NULL);
+
+	token = strtok(path, ":");
+
+	size = _strlen(filename) + 2;
+	slash = malloc(size * sizeof(char));
+	slash = _strcpy(slash, "/");
+	slash = _strcat(slash, filename);
+
+	while (token != NULL)
+	{
+		tmp_path = malloc(_strlen(token) + size);
+		tmp_path = _strcpy(tmp_path, token);
+		tmp_path = _strcat(tmp_path, slash);
+
+		if (is_executable(tmp_path) == PERMISSIONS)
+		{
+			free(slash);
+			free(path);
+			return (tmp_path);
+		}
+		token = strtok(NULL, ":");
+
+		free(tmp_path);
+	}
+
+	free(path);
+	free(slash);
+
+	return (NULL);
 }
 
 /**
- * chdir_to_env - go to the directory that points the adress of the
- *                the environment variable.
- * @vars: vars variable of struct vars_t
- * @str: name of env var to find.
- * Return: always return void.
- */
-void chdir_to_env(vars_t *vars, char *str)
+ * is_current_path -	Check the order of the path
+ *
+ * @path: PATH to check
+ * @info: General infor about the shell
+ **/
+void is_current_path(char *path, general_t *info)
 {
-	int len, index;
+	info->is_current_path = _FALSE;
 
-	len = _strlen(str);
-	index = find_env_index(*vars, str);
-	chdir((vars->env[index]) + len + 1);
+	if (path == NULL)
+		return;
+
+	if (path[0] == ':')
+		info->is_current_path = _TRUE;
+}
+
+/**
+ * get_full_env - Get all the environment
+ **/
+void get_full_env(void)
+{
+	char **tmp;
+	int i;
+
+	for (i = 0, tmp = environ; tmp[i] != NULL; i++)
+	{
+		print(tmp[i]);
+		_putchar('\n');
+	}
 }
