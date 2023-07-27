@@ -1,1 +1,1 @@
-The gate of shell
+The gate of shell, edited README 
