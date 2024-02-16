@@ -1,87 +1,182 @@
-read commands from the standard input. there are no operands and the shell's standard input and standard error are attached to a terminal, the shell is considered to be interactive.
+.TH SHELLBY 1 "November 2018" "Holberton School" "0x15. C - Simple Shell"
+.SH NAME
+.B shellby\fR \- simple UNIX command interpreter
+.SH SYNOPSIS
+.B shellby\fR [\fIfilename\fR]
+.SH DESCRIPTION
+.B Shellby\fR is a simple UNIX command language interpreter that reads commands from either a file or standard input and executes them.
 
-.SH OPERANDS
-Operands don't shall be supported by HH_shell
+.B Invocation
+.in +2n
+\fBShellby\fR can be invoked both interactively and non-interactively.
+If \fBshellby\fR is invoked with standard input not connected to a terminal, it reads and executes received commands in order.
 
-.SH STDIN
-The standard input shall be used if one of the following is true:
-The script executes one or more commands that require input from standard input (such as a read command that does not redirect its input).
+If \fBshellby\fR is invoked with standard input connected to a terminal (determined by \fIisatty(3)\fR), an \fIinteractive\fR shell is opened.
+When executing interactively, \fBshellby\fR displays the prompt \fI$ \fR when it is ready to read a command.
 
-.SH INPUT FILES
-Input files not supported
+Alternatively, if command line arguments are supplied upon invocation, \fBshellby\fR treats the first argument as a file from which to read commands.
+The supplied file should contain one command per line.
+.B Shellby\fR runs each of the commands contained in the file in order before exiting.
+.in
 
-.SS ENVIROMENT VARIABLES
-*ENV  This variable, when and only when an interactive shell is invoked  and the resulting value shall be used as a pathname of a file containing shell commands to execute in the current environment. The file need not be executable. If the expanded value of ENV is not an absolute pathname, the results are unspecified. ENV shall be ignored if the real and effective user IDs or real and effective group IDs of the process are different.
-.br
-*HOME
-Determine the pathname of the user's home directory.
-.br
-*LANG
-Provide a default value for the internationalization variables that are unset or null.
-.br 
-*PATH
-Establish a string formatted 
-.br
-.IP *PWD
-This variable shall represent an absolute pathname of the current working directory. Assignments to this variable may be ignored.
- 
+.B Environment
+.in +2n
+Upon invocation, \fBshellby\fR receives and copies the environment of the parent process in which it was exeucted.
+This \fBenvironment\fR is an array of \fIname-value\fR strings describing variables in the format \fINAME=VALUE\fR.
+.in
 
-.SH ASYNCHRONOUS EVENTS
- The sh utility shall take the standard action for all signals. If the shell is interactive, SIGINT signals received during command line editing shall be handled as described in the EXTENDED DESCRIPTION, and SIGINT signals received at other times shall be caught but no action performed.
+.B Command Execution
+.in +2n
+After receiving a command, \fBshellby\fR tokenizes it into words using \fB" "\fR as a delimiter.
+The first word is considered the command and all remaining words are considered arguments to that command.
+.B Shellby\fR then proceeds with the following actions:
 
-.SH STDOUT
-See \fBSTDERR
+.RS
+1. If the first character of the command is neither a slash (\fI\\\fR) nor dot (\fI.\fR), the shell searches for it in the list of shell builtins.
+If there exists a shell builtin by that name, the builtin is invoked.
+.RE
 
-.SH STDERR
-Except as otherwise stated (by the descriptions of any invoked utilities or in interactive mode), standard error shall be used only for diagnostic messages.
+.RS
+2. If the first character of the command is none of a slash (\fI\\\fR), dot (\fI.\fR), nor builtin, \fBshellby\fR searches each element of the
+\fBPATH\fR environmental variable for a directory containing an executable file by that name.
+.RE
 
-.SH OUTPUT FILES
-None
+.RS
+3. If the first character of the command is a slash (\fI\\\fR) or dot (\fI.\fR) or either of the above searches was successful,
+the shell executes the named program with any remaining arguments given in a separate execution environment.
+.RE
 
-.SH APPLICATION USAGE
-HH_shell can be executed int two modes:
+.B Exit Status
+.in +2n
+.B Shellby\fR returns the exit status of the last command executed, unless a syntax error occurs, with zero indicating success and non-zero indicating failure.
 
-.B *Interactive mode:
-.br ./hsh
+If a command is not found, the return status is 127; if a command is found but is not executable, the return status is 126.
 
-.B *Non interactive mode:
-.br echo "/bin/ls" | ./hsh 
+All builtins return zero on success and one or two on incorrect usage (indicated by a corresponding error message).
+.in
 
-.SH EXAMPLES
-.B 1. Non interactice mode example:
-$ echo "/bin/ls" | ./hsh
-hsh main.c shell.c test_ls_2
-$
-$ cat test_ls_2
-/bin/ls
-/bin/ls
-$
-$ cat test_ls_2 | ./hsh
-hsh main.c shell.c test_ls_2
-hsh main.c shell.c test_ls_2
-$
+.B Signals
+.in +2n
+While running in interactive mode, \fBshellby\fR ignores the keyboard input \fBCtrl+c\fR.
+Alternatively, an input of end-of-file (\fBCtrl+d\fR) will exit the program.
+.in
 
-2. Interactice mode example:
-$ ./hsh
-($) /bin/ls
-hsh main.c shell.c
-($)
-($) exit
-$
+.B Variable Replacement
+.in +2n
+.B Shellby\fR inerprets the \fI$\fR character for variable replacement:
 
-.SH FUTURE DIRECTIONS
-None
+.RS
+.B $ENV_VARIABLE\fR	\fIENV_VARIABLE\fR is subsituted with its value.
+.RE
+
+.RS
+.B $?\fR			\fI?\fR is substituted with the return value of the last program executed.
+.RE
+
+.RS
+.B $$\FR			The second \fI$\fR is substituted with the current process ID.
+.RE
+
+.B Comments
+.in +2n
+.B Shellby\fR ignores all words and characters preceeded by a \fI#\fR character on a line.
+.in
+
+.B Operators
+.in +2n
+
+.RS
+.B ;\fR - Command separator
+.RS
+Commands separated by a \fI;\fR are executed sequentially.
+.RE
+
+.B &&\fR - AND logical operator
+.RS
+.I command1\fR && \fIcommand2\fR: \fIcommand2\fR is executed if, and only if, \fIcommand1\fR returns an exit status of zero.
+.RE
+
+.B ||\fR - OR logical operator
+.RS
+.I command1\fR || \fIcommand2\fR: \fIcommand2\fR is executed if, and only if, \fIcommand1\fR returns a non-zero exit status.
+.RE
+
+The operators \fI&&\fR and \fI||\fR have equal precedence, followed by \fI;\fR.
+.RE
+
+.B Shellby Builtin Commands
+.in +2n
+
+.RS
+.B cd
+.RS
+Usage: .B cd [DIRECTORY]
+
+Changes the current directory of the process to \fBDIRECTORY\fR.
+
+If no argument is given, the command is interpreted as \fBcd $HOME\fR.
+
+If the argument \fB-\fR is given, the command is interpreted as \fBcd $OLDPWD\fR.
+
+The environment variables \fBPWD\fR and \fBOLDPWD\fR are updated after a change of directory.
+.RE
+
+.B alias
+.RS
+Usage: \fBalias [NAME[='VALUE'] ...]\fR
+
+Handles aliases.
+
+.I alias\fR: Prints a list of all aliases, one per line, in the form \fINAME='VALUE'\fR.
+
+.I alias NAME [NAME2 ...]\fR: Prints the aliases \fINAME\fR, \fINAME2\fR, etc. one per line, in the form \fINAME='VALUE'\fR.
+
+.I alias NAME='VALUE' [...]\fR: Defines an alias for each \fINAME\fR whose \fIVALUE\fR is given.
+If \fIname\fR is already an alias, its value is replaced with \fIVALUE\fR.
+.RE
+
+.B exit
+.RS
+Usage: \fBexit [STATUS]\fR
+
+Exits the shell.
+
+The \fBSTATUS\fR argument is the integer used to exit the shell.
+
+If no argument is given, the command is interpreted as \fBexit 0\fR.
+.RE
+
+.B env
+.RS
+Usage: \fBenv\fR
+
+Prints the current environment.
+.RE
+
+.B setenv
+.RS
+Usage: \fBsetenv [VARIABLE] [VALUE]\fR
+
+Initializes a new environment variable, or modifies an existing one.
+
+Upon failure, prints a message to \fBstderr\fR
+.RE
+
+.B unsetenv
+.RS
+Usage: \fBunsetenv [VARIABLE]\fR
+
+Removes an environmental variable.
+
+Upon failure, prints a message to \fBstderr\fR.
+.RE
+.RE
+.in
 
 .SH SEE ALSO
-acces(2), chdir(2), close (2), closedir(2), execve(2), exit(3), _exit(2), fflush(3), fork(2), free(3), getcwd(3), getline(3) 
-isatty(3), kill(2), malloc(3), open(2), opendir(3), perror(3), read(2), readdir(3), signal(2), stat(2), lstat(2), fstat(2) 
-strtok(3), wait(2), waitpid(2), wait3(2), wait4(2), write(2).
+access(2), chdir(2), execve(2), _exit(2), exit(3), fflush(3), fork(2), free(3), isatty(3), getcwd(3), malloc(3), open(2), read(2), sh(1), signal(2), stat(2), wait(2), write(2)
 
-.SH COPYRIGHT
-See AUTHORS
-
-.SH AUTHORS
-.B Ebrudu Hendrix Obukome <hendrixobuks@gmail.com>
-.br
-.B Grace Bamidele
-.br
+.B Shellby\fR emulates basic functionality of the \fBsh\fR shell.
+This man page borrows from the corresponding man pages sh(1) and dash(1).
+.SH AUTHOR
+John Nnamani and Egwuatu David
