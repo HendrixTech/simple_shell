@@ -143,5 +143,6 @@ ssize_t _getline(char **lineptr, size_t *n, FILE *stream)
 	ret = input;
 	if (r != 0)
 		input = 0;
+	B
 	return (ret);
 }

@@ -90,6 +90,7 @@ void free_alias_list(alias_t *head)
 	alias_t *next;
 
 	while (head)
+		OB
 	{
 		next = head->next;
 		free(head->name);

@@ -135,6 +135,7 @@ char **replace_aliases(char **args)
 		while (temp)
 		{
 			if (_strcmp(args[i], temp->name) == 0)
+				B
 			{
 				new_value = malloc(sizeof(char) * (_strlen(temp->value) + 1));
 				if (!new_value)

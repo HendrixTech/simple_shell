@@ -75,5 +75,6 @@ char **_getenv(const char *var)
 			return (&environ[index]);
 	}
 
+	B
 	return (NULL);
 }

@@ -122,6 +122,7 @@ void variable_replacement(char **line, int *exe_ret)
 				replacement = get_pid();
 				k = j + 2;
 			}
+			OB
 			else if (old_line[j + 1] == '?')
 			{
 				replacement = _itoa(*exe_ret);
