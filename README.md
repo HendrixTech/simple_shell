@@ -217,7 +217,7 @@ At this time, there are no known bugs.
 ## Authors
 
 - Ebrudu Hendrix Obukome | [GitHub](https://www.github.com/HendrixTech)
-- Grace Bamidele | [GitHub](http:/www.github.com/)
+- Grace Bamidele | [GitHub](http:/www.github.com/Gracy222)
 
 
 ## License
